@@ -149,8 +149,18 @@ def make_decision_and_execute():
         print(f"Failed to parse the advice as JSON: {e}")
 
 if __name__ == "__main__":
-    make_decision_and_execute()
-    schedule.every().hour.at(":01").do(make_decision_and_execute)
+    initialize_db()
+    #testing
+    # schedule.every().minute.do(make_decision_and_execute)
+
+    # Schedule the task to run at 00:01
+    schedule.every().day.at("00:01").do(make_decision_and_execute)
+
+    # Schedule the task to run at 08:01
+    schedule.every().day.at("08:01").do(make_decision_and_execute)
+
+    # Schedule the task to run at 16:01
+    schedule.every().day.at("16:01").do(make_decision_and_execute)
 
     while True:
         schedule.run_pending()
