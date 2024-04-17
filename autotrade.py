@@ -8,10 +8,59 @@ import json
 from openai import OpenAI
 import schedule
 import time
+import requests
+from datetime import datetime
+import sqlite3
 
 # Setup
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 upbit = pyupbit.Upbit(os.getenv("UPBIT_ACCESS_KEY"), os.getenv("UPBIT_SECRET_KEY"))
+
+def initialize_db(db_path='trading_decisions.sqlite'):
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS decisions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp DATETIME,
+                decision TEXT,
+                percentage REAL,
+                reason TEXT,
+                btc_balance REAL,
+                krw_balance REAL,
+                btc_avg_buy_price REAL,
+                btc_krw_price REAL
+            );
+        ''')
+        conn.commit()
+
+def save_decision_to_db(decision, current_status):
+    db_path = 'trading_decisions.sqlite'
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+    
+        # Parsing current_status from JSON to Python dict
+        status_dict = json.loads(current_status)
+        current_price = pyupbit.get_orderbook(ticker="KRW-BTC")['orderbook_units'][0]["ask_price"]
+        
+        # Preparing data for insertion
+        data_to_insert = (
+            decision.get('decision'),
+            decision.get('percentage', 100),  # Defaulting to 100 if not provided
+            decision.get('reason', ''),  # Defaulting to an empty string if not provided
+            status_dict.get('btc_balance'),
+            status_dict.get('krw_balance'),
+            status_dict.get('btc_avg_buy_price'),
+            current_price
+        )
+        
+        # Inserting data into the database
+        cursor.execute('''
+            INSERT INTO decisions (timestamp, decision, percentage, reason, btc_balance, krw_balance, btc_avg_buy_price, btc_krw_price)
+            VALUES (datetime('now', 'localtime'), ?, ?, ?, ?, ?, ?, ?)
+        ''', data_to_insert)
+    
+        conn.commit()
 
 def get_current_status():
     orderbook = pyupbit.get_orderbook(ticker="KRW-BTC")
