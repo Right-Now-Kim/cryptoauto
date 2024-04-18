@@ -303,7 +303,8 @@ def make_decision_and_execute():
                     execute_buy(percentage)
                 elif decision.get('decision') == "sell":
                     execute_sell(percentage)
-                
+
+                print(decision)
                 save_decision_to_db(decision, current_status)
             except Exception as e:
                 print(f"Failed to execute the decision or save to DB: {e}")
@@ -320,7 +321,7 @@ if __name__ == "__main__":
     schedule.every().day.at("08:01").do(make_decision_and_execute)
 
     # Schedule the task to run at 16:01
-    schedule.every().day.at("17:03").do(make_decision_and_execute)
+    schedule.every().day.at("16:01").do(make_decision_and_execute)
 
     while True:
         schedule.run_pending()
