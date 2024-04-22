@@ -321,7 +321,7 @@ if __name__ == "__main__":
     schedule.every().day.at("08:01").do(make_decision_and_execute)
 
     # Schedule the task to run at 16:01
-    schedule.every().day.at("16:01").do(make_decision_and_execute)
+    schedule.every().day.at("16:22").do(make_decision_and_execute)
 
     while True:
         schedule.run_pending()
