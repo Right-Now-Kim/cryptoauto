@@ -229,7 +229,7 @@ def analyze_data_with_gpt4(news_data, data_json, last_decisions, fear_and_greed,
             return None
         
         response = client.chat.completions.create(
-            model="gpt-4-turbo-preview",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": instructions},
                 {"role": "user", "content": news_data},
