@@ -121,7 +121,7 @@ Example structure for JSON Data (Current Investment State) is as follows:
 - **Factor in Transaction Fees**: Upbit charges a transaction fee of 0.05%. Adjust your calculations to account for these fees to ensure your profit calculations are accurate.
 - **Account for Market Slippage**: Especially relevant when large orders are placed. Analyze the orderbook to anticipate the impact of slippage on your transactions.
 - Remember, successful investment strategies require balancing aggressive returns with careful risk assessment. Utilize a holistic view of market data, technical indicators, and current status to inform your strategies.
-- Suppose Bitcoin price will reach 150,000,000 krw by September 2024.
+- Suppose Bitcoin price will reach 150,000,000 krw by June 2025.
 - Consider setting predefined criteria for what constitutes a profitable strategy and the conditions under which penalties apply to refine the incentives for the analysis engine.
 - This task significantly impacts personal assets, requiring careful and strategic analysis.
 - Take a deep breath and work on this step by step.
