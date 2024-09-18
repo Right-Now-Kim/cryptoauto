@@ -5,7 +5,7 @@ import math
 app = Flask(__name__)
 
 def get_db_connection():
-    conn = sqlite3.connect('/path/to/your/trading_decisions.sqlite')
+    conn = sqlite3.connect('/home/ubuntu/cryptoauto/trading_decisions.sqlite')
     conn.row_factory = sqlite3.Row
     return conn
 
