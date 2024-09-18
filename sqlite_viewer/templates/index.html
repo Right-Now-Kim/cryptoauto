@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trading Decisions</title>
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      .pagination {
+        margin-top: 20px;
+      }
+      .pagination a {
+        color: black;
+        float: left;
+        padding: 8px 16px;
+        text-decoration: none;
+      }
+      .pagination a.active {
+        background-color: #4caf50;
+        color: white;
+      }
+      .pagination a:hover:not(.active) {
+        background-color: #ddd;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Latest Trading Decisions</h1>
+    <table>
+      <tr>
+        <th>Timestamp</th>
+        <th>Decision</th>
+        <th>Percentage</th>
+        <th>Reason</th>
+        <th>BTC Balance</th>
+        <th>KRW Balance</th>
+        <th>BTC Avg Buy Price</th>
+        <th>BTC KRW Price</th>
+      </tr>
+      {% for decision in decisions %}
+      <tr>
+        <td>{{ decision['timestamp'] }}</td>
+        <td>{{ decision['decision'] }}</td>
+        <td>{{ decision['percentage'] }}</td>
+        <td>{{ decision['reason'] }}</td>
+        <td>{{ decision['btc_balance'] }}</td>
+        <td>{{ decision['krw_balance'] }}</td>
+        <td>{{ decision['btc_avg_buy_price'] }}</td>
+        <td>{{ decision['btc_krw_price'] }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    <div class="pagination">
+      {% if page > 1 %}
+      <a href="{{ url_for('index', page=page-1) }}">&laquo; Previous</a>
+      {% endif %} {% for i in range(1, total_pages + 1) %} {% if i == page %}
+      <a href="{{ url_for('index', page=i) }}" class="active">{{ i }}</a>
+      {% else %}
+      <a href="{{ url_for('index', page=i) }}">{{ i }}</a>
+      {% endif %} {% endfor %} {% if page < total_pages %}
+      <a href="{{ url_for('index', page=page+1) }}">Next &raquo;</a>
+      {% endif %}
+    </div>
+  </body>
+</html>
