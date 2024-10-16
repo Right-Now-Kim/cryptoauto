@@ -96,6 +96,8 @@ def fetch_last_decisions(db_path='trading_decisions.sqlite', num_decisions=10):
 
 def get_current_status():
     orderbook = pyupbit.get_orderbook(ticker="KRW-BTC")
+    print("Orderbook type:", type(orderbook))
+    print("Orderbook content:", orderbook)
     current_time = orderbook['timestamp']
     btc_balance = 0
     krw_balance = 0
@@ -320,7 +322,7 @@ if __name__ == "__main__":
     schedule.every().day.at("08:01").do(make_decision_and_execute)
 
     # Schedule the task to run at 16:01
-    schedule.every().day.at("22:02").do(make_decision_and_execute)
+    schedule.every().day.at("22:05").do(make_decision_and_execute)
 
     while True:
         schedule.run_pending()
