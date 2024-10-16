@@ -175,11 +175,17 @@ def get_news_data():
 
     try:
         response = requests.get(url)
+        print("News API Response type:", type(response.json()))
+        print("News API Response content:", response.json())  # 응답 전체 내용 출력
+        
         news_results = response.json()['news_results']
+        print("News results type:", type(news_results))
+        print("News results content:", news_results)
 
         simplified_news = []
         
         for news_item in news_results:
+            print("Processing news item:", news_item)  # 각 뉴스 아이템 처리 과정 출력
             if 'stories' in news_item:
                 for story in news_item['stories']:
                     timestamp = int(datetime.strptime(story['date'], '%m/%d/%Y, %H:%M %p, %z %Z').timestamp() * 1000)
@@ -192,7 +198,11 @@ def get_news_data():
                     simplified_news.append((news_item['title'], news_item.get('source', {}).get('name', 'Unknown source'), 'No timestamp provided'))
         result = str(simplified_news)
     except Exception as e:
-        print(f"Error fetching news data: {e}")
+        print(f"Detailed error in get_news_data: {str(e)}")
+        print(f"Error type: {type(e)}")
+        if hasattr(e, '__traceback__'):
+            import traceback
+            print(f"Traceback: {traceback.format_tb(e.__traceback__)}")
 
     return result
 
@@ -336,7 +346,7 @@ if __name__ == "__main__":
     schedule.every().day.at("08:01").do(make_decision_and_execute)
 
     # Schedule the task to run at 16:01
-    schedule.every().day.at("22:12").do(make_decision_and_execute)
+    schedule.every().day.at("22:15").do(make_decision_and_execute)
 
     while True:
         schedule.run_pending()
