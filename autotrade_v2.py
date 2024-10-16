@@ -96,8 +96,6 @@ def fetch_last_decisions(db_path='trading_decisions.sqlite', num_decisions=10):
 
 def get_current_status():
     orderbook = pyupbit.get_orderbook(ticker="KRW-BTC")
-    print("Orderbook type:", type(orderbook))
-    print("Orderbook content:", orderbook)
     current_time = orderbook['timestamp']
     btc_balance = 0
     krw_balance = 0
@@ -114,60 +112,46 @@ def get_current_status():
     return json.dumps(current_status)
 
 def fetch_and_prepare_data():
-   try:
-       # Fetch data
-       df_daily = pyupbit.get_ohlcv("KRW-BTC", "day", count=30)
-       print("Daily data type:", type(df_daily))
-       print("Daily data head:", df_daily.head() if df_daily is not None else "None")
-       
-       df_hourly = pyupbit.get_ohlcv("KRW-BTC", interval="minute60", count=24)
-       print("Hourly data type:", type(df_hourly))
-       print("Hourly data head:", df_hourly.head() if df_hourly is not None else "None")
+    # Fetch data
+    df_daily = pyupbit.get_ohlcv("KRW-BTC", "day", count=30)
+    df_hourly = pyupbit.get_ohlcv("KRW-BTC", interval="minute60", count=24)
 
-       # Define a helper function to add indicators
-       def add_indicators(df):
-           # Moving Averages
-           df['SMA_10'] = ta.sma(df['close'], length=10)
-           df['EMA_10'] = ta.ema(df['close'], length=10)
+    # Define a helper function to add indicators
+    def add_indicators(df):
+        # Moving Averages
+        df['SMA_10'] = ta.sma(df['close'], length=10)
+        df['EMA_10'] = ta.ema(df['close'], length=10)
 
-           # RSI
-           df['RSI_14'] = ta.rsi(df['close'], length=14)
+        # RSI
+        df['RSI_14'] = ta.rsi(df['close'], length=14)
 
-           # Stochastic Oscillator
-           stoch = ta.stoch(df['high'], df['low'], df['close'], k=14, d=3, smooth_k=3)
-           df = df.join(stoch)
+        # Stochastic Oscillator
+        stoch = ta.stoch(df['high'], df['low'], df['close'], k=14, d=3, smooth_k=3)
+        df = df.join(stoch)
 
-           # MACD
-           ema_fast = df['close'].ewm(span=12, adjust=False).mean()
-           ema_slow = df['close'].ewm(span=26, adjust=False).mean()
-           df['MACD'] = ema_fast - ema_slow
-           df['Signal_Line'] = df['MACD'].ewm(span=9, adjust=False).mean()
-           df['MACD_Histogram'] = df['MACD'] - df['Signal_Line']
+        # MACD
+        ema_fast = df['close'].ewm(span=12, adjust=False).mean()
+        ema_slow = df['close'].ewm(span=26, adjust=False).mean()
+        df['MACD'] = ema_fast - ema_slow
+        df['Signal_Line'] = df['MACD'].ewm(span=9, adjust=False).mean()
+        df['MACD_Histogram'] = df['MACD'] - df['Signal_Line']
 
-           # Bollinger Bands
-           df['Middle_Band'] = df['close'].rolling(window=20).mean()
-           std_dev = df['close'].rolling(window=20).std()
-           df['Upper_Band'] = df['Middle_Band'] + (std_dev * 2)
-           df['Lower_Band'] = df['Middle_Band'] - (std_dev * 2)
+        # Bollinger Bands
+        df['Middle_Band'] = df['close'].rolling(window=20).mean()
+        std_dev = df['close'].rolling(window=20).std()
+        df['Upper_Band'] = df['Middle_Band'] + (std_dev * 2)
+        df['Lower_Band'] = df['Middle_Band'] - (std_dev * 2)
 
-           return df
+        return df
 
-       # Add indicators to both dataframes
-       df_daily = add_indicators(df_daily)
-       df_hourly = add_indicators(df_hourly)
+    # Add indicators to both dataframes
+    df_daily = add_indicators(df_daily)
+    df_hourly = add_indicators(df_hourly)
 
-       combined_df = pd.concat([df_daily, df_hourly], keys=['daily', 'hourly'])
-       print("Combined data type:", type(combined_df))
-       print("Combined data shape:", combined_df.shape)
-       
-       combined_data = combined_df.to_json(orient='split')
-       print("JSON data type:", type(combined_data))
-       print("JSON data preview:", combined_data[:200])  # 처음 200자만 출력
+    combined_df = pd.concat([df_daily, df_hourly], keys=['daily', 'hourly'])
+    combined_data = combined_df.to_json(orient='split')
 
-       return json.dumps(combined_data)
-   except Exception as e:
-       print(f"Error in fetch_and_prepare_data: {e}")
-       return json.dumps({})
+    return json.dumps(combined_data)
 
 def get_news_data():
     url = "https://serpapi.com/search.json?engine=google_news&q=btc&api_key=" + os.getenv("SERPAPI_API_KEY")
@@ -175,17 +159,11 @@ def get_news_data():
 
     try:
         response = requests.get(url)
-        print("News API Response type:", type(response.json()))
-        print("News API Response content:", response.json())  # 응답 전체 내용 출력
-        
         news_results = response.json()['news_results']
-        print("News results type:", type(news_results))
-        print("News results content:", news_results)
 
         simplified_news = []
         
         for news_item in news_results:
-            print("Processing news item:", news_item)  # 각 뉴스 아이템 처리 과정 출력
             if 'stories' in news_item:
                 for story in news_item['stories']:
                     timestamp = int(datetime.strptime(story['date'], '%m/%d/%Y, %H:%M %p, %z %Z').timestamp() * 1000)
@@ -198,11 +176,7 @@ def get_news_data():
                     simplified_news.append((news_item['title'], news_item.get('source', {}).get('name', 'Unknown source'), 'No timestamp provided'))
         result = str(simplified_news)
     except Exception as e:
-        print(f"Detailed error in get_news_data: {str(e)}")
-        print(f"Error type: {type(e)}")
-        if hasattr(e, '__traceback__'):
-            import traceback
-            print(f"Traceback: {traceback.format_tb(e.__traceback__)}")
+        print(f"Error fetching news data: {e}")
 
     return result
 
@@ -346,7 +320,7 @@ if __name__ == "__main__":
     schedule.every().day.at("08:01").do(make_decision_and_execute)
 
     # Schedule the task to run at 16:01
-    schedule.every().day.at("22:15").do(make_decision_and_execute)
+    schedule.every().day.at("21:33").do(make_decision_and_execute)
 
     while True:
         schedule.run_pending()
