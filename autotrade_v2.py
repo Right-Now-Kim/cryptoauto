@@ -205,7 +205,7 @@ def get_instructions(file_path):
         print(f"An error occurred while reading the file {file_path}: {e}")
 
 def analyze_data_with_gpt4(news_data, data_json, last_decisions, fear_and_greed, current_status):
-    instructions_path = "instructions_v4.md"
+    instructions_path = "instruction_v4.md"
     try:
         instructions = get_instructions(instructions_path)
         if not instructions:
@@ -214,7 +214,7 @@ def analyze_data_with_gpt4(news_data, data_json, last_decisions, fear_and_greed,
         
         print("Sending request to GPT-4...")
         response = client.chat.completions.create(
-            model="gpt-4-turbo",  # Changed from "chatgpt-4o-latest" to "gpt-4"
+            model="gpt-4o",  # Changed from "chatgpt-4o-latest" to "gpt-4"
             messages=[
                 {"role": "system", "content": instructions},
                 {"role": "user", "content": news_data},
@@ -320,7 +320,7 @@ if __name__ == "__main__":
     schedule.every().day.at("08:01").do(make_decision_and_execute)
 
     # Schedule the task to run at 16:01
-    schedule.every().day.at("22:21").do(make_decision_and_execute)
+    schedule.every().day.at("22:43").do(make_decision_and_execute)
 
     while True:
         schedule.run_pending()
