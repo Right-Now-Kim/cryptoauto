@@ -114,46 +114,60 @@ def get_current_status():
     return json.dumps(current_status)
 
 def fetch_and_prepare_data():
-    # Fetch data
-    df_daily = pyupbit.get_ohlcv("KRW-BTC", "day", count=30)
-    df_hourly = pyupbit.get_ohlcv("KRW-BTC", interval="minute60", count=24)
+   try:
+       # Fetch data
+       df_daily = pyupbit.get_ohlcv("KRW-BTC", "day", count=30)
+       print("Daily data type:", type(df_daily))
+       print("Daily data head:", df_daily.head() if df_daily is not None else "None")
+       
+       df_hourly = pyupbit.get_ohlcv("KRW-BTC", interval="minute60", count=24)
+       print("Hourly data type:", type(df_hourly))
+       print("Hourly data head:", df_hourly.head() if df_hourly is not None else "None")
 
-    # Define a helper function to add indicators
-    def add_indicators(df):
-        # Moving Averages
-        df['SMA_10'] = ta.sma(df['close'], length=10)
-        df['EMA_10'] = ta.ema(df['close'], length=10)
+       # Define a helper function to add indicators
+       def add_indicators(df):
+           # Moving Averages
+           df['SMA_10'] = ta.sma(df['close'], length=10)
+           df['EMA_10'] = ta.ema(df['close'], length=10)
 
-        # RSI
-        df['RSI_14'] = ta.rsi(df['close'], length=14)
+           # RSI
+           df['RSI_14'] = ta.rsi(df['close'], length=14)
 
-        # Stochastic Oscillator
-        stoch = ta.stoch(df['high'], df['low'], df['close'], k=14, d=3, smooth_k=3)
-        df = df.join(stoch)
+           # Stochastic Oscillator
+           stoch = ta.stoch(df['high'], df['low'], df['close'], k=14, d=3, smooth_k=3)
+           df = df.join(stoch)
 
-        # MACD
-        ema_fast = df['close'].ewm(span=12, adjust=False).mean()
-        ema_slow = df['close'].ewm(span=26, adjust=False).mean()
-        df['MACD'] = ema_fast - ema_slow
-        df['Signal_Line'] = df['MACD'].ewm(span=9, adjust=False).mean()
-        df['MACD_Histogram'] = df['MACD'] - df['Signal_Line']
+           # MACD
+           ema_fast = df['close'].ewm(span=12, adjust=False).mean()
+           ema_slow = df['close'].ewm(span=26, adjust=False).mean()
+           df['MACD'] = ema_fast - ema_slow
+           df['Signal_Line'] = df['MACD'].ewm(span=9, adjust=False).mean()
+           df['MACD_Histogram'] = df['MACD'] - df['Signal_Line']
 
-        # Bollinger Bands
-        df['Middle_Band'] = df['close'].rolling(window=20).mean()
-        std_dev = df['close'].rolling(window=20).std()
-        df['Upper_Band'] = df['Middle_Band'] + (std_dev * 2)
-        df['Lower_Band'] = df['Middle_Band'] - (std_dev * 2)
+           # Bollinger Bands
+           df['Middle_Band'] = df['close'].rolling(window=20).mean()
+           std_dev = df['close'].rolling(window=20).std()
+           df['Upper_Band'] = df['Middle_Band'] + (std_dev * 2)
+           df['Lower_Band'] = df['Middle_Band'] - (std_dev * 2)
 
-        return df
+           return df
 
-    # Add indicators to both dataframes
-    df_daily = add_indicators(df_daily)
-    df_hourly = add_indicators(df_hourly)
+       # Add indicators to both dataframes
+       df_daily = add_indicators(df_daily)
+       df_hourly = add_indicators(df_hourly)
 
-    combined_df = pd.concat([df_daily, df_hourly], keys=['daily', 'hourly'])
-    combined_data = combined_df.to_json(orient='split')
+       combined_df = pd.concat([df_daily, df_hourly], keys=['daily', 'hourly'])
+       print("Combined data type:", type(combined_df))
+       print("Combined data shape:", combined_df.shape)
+       
+       combined_data = combined_df.to_json(orient='split')
+       print("JSON data type:", type(combined_data))
+       print("JSON data preview:", combined_data[:200])  # 처음 200자만 출력
 
-    return json.dumps(combined_data)
+       return json.dumps(combined_data)
+   except Exception as e:
+       print(f"Error in fetch_and_prepare_data: {e}")
+       return json.dumps({})
 
 def get_news_data():
     url = "https://serpapi.com/search.json?engine=google_news&q=btc&api_key=" + os.getenv("SERPAPI_API_KEY")
@@ -322,7 +336,7 @@ if __name__ == "__main__":
     schedule.every().day.at("08:01").do(make_decision_and_execute)
 
     # Schedule the task to run at 16:01
-    schedule.every().day.at("22:05").do(make_decision_and_execute)
+    schedule.every().day.at("22:12").do(make_decision_and_execute)
 
     while True:
         schedule.run_pending()
